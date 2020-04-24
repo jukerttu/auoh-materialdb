@@ -1,8 +1,7 @@
 const material_model = require('./material_model');
 
-
-// CREATE
-const api_post_material = (req, res, next) => {
+// Helpers
+const material_data = (req) => {
     let data = {
         name: req.body.name,
         min_density: req.body.min_density,
@@ -12,6 +11,12 @@ const api_post_material = (req, res, next) => {
         min_strength_density: req.body.min_strength / req.body.max_density,
         max_strength_density: req.body.max_strength / req.body.min_density
     };
+    return data;
+};
+
+// CREATE
+const api_post_material = (req, res, next) => {
+    let data = material_data(req);
 
     let new_material = material_model(data);
 
@@ -35,16 +40,28 @@ const api_get_materials = (req, res, next)=>{
 };
 
 // UPDATE
-//const api_put_material = (req, res, next)=>{
-//    let data = req.body;
-//    res.send(JSON.stringify([data]));
-//};
+// PUT /api/material
+// findByIdAndUpdate lisäyksenä new: true arvolla palauttaa uudet datat,
+// jos ei määritelty default on false
+const api_put_material = (req, res, next) => {
+    let id = req.params.id;
+    let data = material_data(req);
+
+    material_model.findByIdAndUpdate(id, data, {
+        new: true
+    }).then((material)=>{
+        res.send(material);
+    }).catch(err=> {
+        res.status(500);
+        console.log(err);
+    });;
+};
 
 // DELETE
 // DELETE /api/material/
-const api_delete_material = (req, res, next)=>{
+const api_delete_material = (req, res, next) => {
     let id = req.params.id;
-    material_model.findByIdAndDelete(id).then(()=>{
+    material_model.findByIdAndDelete(id).then(() => {
         res.send();
     }).catch(err => {
         res.status(500);
@@ -57,3 +74,4 @@ const api_delete_material = (req, res, next)=>{
 module.exports.api_get_materials = api_get_materials;
 module.exports.api_post_material = api_post_material;
 module.exports.api_delete_material = api_delete_material;
+module.exports.api_put_material = api_put_material;
